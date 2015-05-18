@@ -37,11 +37,15 @@ URI 호출 회수를 저장하기 위한 redis 서버가 필요합니다.(httpd.
 ## 설정방법
 ### so 로딩
 * httpd.conf에 아래 두 라인 추가합니다.
-"`LoadFile   modules/libhiredis.so
+
+
+"'
+LoadFile   modules/libhiredis.so
 LoadModule  secuip_module  modules/mod_secuip.so `"
 * 위 설정 내용은 아파치 웹서버가 설치된 경로 아래에 modules 라는 디렉토리에 2개의 so 파일들(libhiredis.so, mod_secuip.so)을 저장한 경우입니다. 다른 디렉토리에 so 파일들이 존재한다면 해당 경로의 절대로를 사용하여 설정할 수 있습니다.
 "`LoadFile /MY_DIR/MY_SO/libhiredis.so
-LoadModule secuip_module   /MY_DIR/MY_SO/mod_secuip.so `"
+LoadModule secuip_module   /MY_DIR/MY_SO/mod_secuip.so 
+'"
  
 ### 적용 경로 설정
 * Redis connection pool 설정
