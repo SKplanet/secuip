@@ -10,6 +10,7 @@ secuip는 HTTP 요청을 차단하는 아파치 모듈입니다. 아파치 웹�
 
 ## 지원하는 아파치 버전
 본 모듈은 아파치 웹서버에 모듈 방식으로 추가하여 동작합니다.
+
 Apache httpd 2.2.x
 Apache httpd 2.4.x
 
@@ -47,26 +48,33 @@ LoadModule secuip_module   /MY_DIR/MY_SO/mod_secuip.so `"
 아파치 웹서버 시작시 redis 서버와의 연결 pool를 생성합니다. redis 연결정보가 내부 queue에 저장됩니다.
 프로세스당 독립적인 queue 공간을 활용하여 RedisInitCount 만큼의 connection를 미리 만들어 사용합니다.
 아래 설정내용을 httpd.conf 최상위에 넣으십시오.
+
+
 "`SecuipRedisQueueEnabled on # 본 기능 사용여부(off시 request 마다 매번 redis 서버에 연결하고 처리후 연결 종료함)
 SecuipRedisIP 172.19.113.231 # redis IP
 SecuipRedisPort 6379  # redis Port
 SecuipRedisPassword "MY_REDIS_PASSWORD" # redis 비밀번호
 SecuipRedisInitCount 5 # 각 프로세스당 redis 서버에 미리 연결하는 connection 수`"
+
 * URI 경로 지정을 위한 설정
 virtual host 설정이 있는 곳에 아래 설정을 추가합니다.(예. 443 or 80 port)
+
 "`<Location 원하는 URI 경로> (예제1: <Location /api/login/loginPostTOI.do>, 예제2: <Location /api/login/*>)
   SecuipEnabled on  # 본 경로에 대한 기능 사용(off:미사용)
   SecuipDurationSecond 30 # 동일한 요청에 대하여 요청카운트를 기록하는 시간 (초단위)
   SecuipMaxCallCount 4 # SecuipDurationSecond에 설정한 시간 이내에 본 숫자에 해당하는 요청 이상이 온 경우 차단 시작함.
   SecuipBlockSecond 60 # SecuipMaxCallCount를 초과한 경우에 이 시간(초단위) 동안에 동일 IP에서 동일 요청은 block 처리함. 이 시간이 지나면 다시 요청 허가됨.
 SecuipBlockResponseCode 403  # 요청 회수 초과로 block될 경우에 서버가 클라이언트 전달하는 HTTP 응답코드(미설정시 400) 
-</Location>`"
+</Location>
+`"
 
 위 내용대로 설정하면 "30초 동안에 동일한 IP에서 동일한 URI 요청이 4회이상(3회 초과)이 되는 시점부터 60초간 동일한 요청은 막힙니다".
 60초 이후에는 동일한 요청도 허용하도록 자동으로 복구 됩니다.
 
 ## 로깅
 아래와 같은 로그가 apache error log 파일에 남습니다.
+
+
 "`
 [Thu Apr 03 13:03:13 2014] [error] The FIRST request(within [30sec])(Passing count:1) [123.143.8.124_/api/login/loginPostTOI.do] [duration time:30]
 [Thu Apr 03 13:03:16 2014] [error] The FIRST request(within [30sec])(Passing count:1) [112.169.60.135_/api/login/loginPostTOI.do] [duration time:30]
@@ -81,9 +89,11 @@ SecuipBlockResponseCode 403  # 요청 회수 초과로 block될 경우에 서버
 [Thu Apr 03 13:03:25 2014] [error] Blocking [123.143.8.124_/api/login/loginPostTOI.do] [total req. count:9]
 [Thu Apr 03 13:03:26 2014] [error] Blocking [123.143.8.124_/api/login/loginPostTOI.do] [total req. count:10]
 `"
+
  
 ## Todo
 * query string의 key, value에 따른 차단 기능 추가
 * URI 변경 설정을 apache 재시작없이 실시간으로 적용하는 기능 추가 
 * 차단 조건에 부합할 때, 차단하지 않고 특정 HTTP 헤더를 추가하고 back-end 서버로 전달하는 기능 추가
 * 특정 HTTP header의 값을 key로 사용할 수 있게 하는 기능 추가
+
