@@ -61,7 +61,7 @@ LoadModule secuip_module   /MY_DIR/MY_SO/mod_secuip.so
 
 
 ```
-SecuipRedisQueueEnabled on # 본 기능 사용여부(off시 request 마다 매번 redis 서버에 연결하고 처리후 연결 종료함)
+SecuipRedisQueueEnabled on # 본 기능 사용여부(off이면 connection pool 미사용)
 SecuipRedisIP 172.19.113.231 # redis IP
 SecuipRedisPort 6379  # redis Port
 SecuipRedisPassword "MY_REDIS_PASSWORD" # redis 비밀번호
