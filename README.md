@@ -16,10 +16,10 @@ Apache httpd 2.2.x
 Apache httpd 2.4.x
 
 ### 외부 모듈 의존성
-* Redis 서버
+#### Redis 서버
 secuip는 호출 회수를 Redis 서버에 저장합니다. 따라서, 동일한 기능의 여러 서버를 운영하더라도 호출 회수를 전체 서버를 기준으로 정할 수 있습니다.
 secuip 모듈은 각 서버에 설치하고, 요청 회수 관리는 Redis 서버를 이용합니다. 
-* hiredis 라이브러리
+### hiredis 라이브러리(redis client)
 secuip는 redis client 기능을 위해서 hiredis를 사용합니다. 따라서, hiredis를 빌드한 libhiredis.so 파일을 필요로 합니다.
 
 ### 설치 방법
