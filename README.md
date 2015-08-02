@@ -1,6 +1,6 @@
 # Secuip
 
-secuip is a apache modulue which can block http requests. It has a configuration within httpd.conf.
+secuip is a apache modulue which can block http requests. It has configurations within httpd.conf.
 
 ### main features
 * HTTP request block if requests which have same Client IP and same URI and exceed a spectific count
