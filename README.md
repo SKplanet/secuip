@@ -134,7 +134,7 @@ secuip는 redis client 기능을 위해서 hiredis를 사용합니다. 따라서
 * 모듈빌드: secuip/ 디렉토리로 이동하여 make 실행하면 .libs/mod_secuip.so  파일이 만들어집니다.(apache 2.4.x 기준)
 * (apache 2.2.x 기반이라면 make -f Makefile22 명령으로 빌드해야함)
 * (아파치 설치 경로는 /app/apache 기준입니다. 다른 디렉토리에 아파치가 설치되어 있다면 Makefile, Makefile22의 내용에서 그 경로에 맞게 변경하십시오.)
-* 두 개의 .so 파일을 /app/apache/modules 디렉토리(일산IDC 서버 기준)로 복사.(또는 다른 임의의 장소에 복사)
+* 두 개의 .so 파일을 /app/apache/modules 디렉토리로 복사.(또는 다른 임의의 장소에 복사)
 * 설치는 끝난 상태이고, .so 파일들의 위치에 따라 httpd.conf 파일을 설정해야합니다.(아래 설정방법을 참고하세요.)
  
 #### redis 서버
