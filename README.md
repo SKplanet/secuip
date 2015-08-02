@@ -33,7 +33,7 @@ secuip uses hiredis library which is a redis client library. So, the configurati
 
 ### configuration detail
 #### so library loading
-* add two lines in httpd.conf(the first one is relatibe path and the second one is absolute path)
+* add two lines in httpd.conf(the first one is relative path and the second one is absolute path)
 
 
 ```
