@@ -9,7 +9,7 @@ secuip is a apache modulue which can block http requests. It has configurations 
 * HTTP response code is configurable when the request is blocked.(default code is 400)
 
 ### apache versions supported
-Apache httpd 2.2.x
+Apache httpd 2.2.x, 
 Apache httpd 2.4.x
 
 ### dependency with external modules
