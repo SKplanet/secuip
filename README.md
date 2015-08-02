@@ -1,5 +1,110 @@
 # Secuip
 
+secuip is a apache modulue which can block http requests. It has a configuration within httpd.conf.
+
+### main features
+* request block if requests which have same Client IP and same URI, exceed a spectific count
+* share the request count between servers (needs a redis server)
+* duration time is configurable(duration expire is supproted automatically using redis key expire)
+* HTTP response code is configurable when the request is blocked.(default code is 400)
+
+### apache versions supported
+Apache httpd 2.2.x
+Apache httpd 2.4.x
+
+### dependency with external modules
+#### Redis server
+request counts are store in redis server and then same function servers share the request count on all servers.
+#### hiredis library(redis client)
+secuip uses hiredis library which is a redis client library. So, the configuration is needed by designating libhiredis.so file path.
+
+### Installation
+#### module and redis client(hiredis) installation
+* git clone --recursive https://github.com/skplanet/secuip/
+* build hiredis lib.: move to secuip/hiredis/ and execute make for building libhiredis.so
+* build secuip: move to secuip/ and make. You can see the .libs/mod_secuip.so (apache 2.4.x)
+* if you are using apache 2.2.x, use this command, make -f Makefile22.
+* (Assuption: apache webserver's path is /app/apache. If it is different, you should modify Makefile, Makefile22 based on your apache directory.)
+* copy two .so files to /app/apache/modules(or apache module directory).
+* Intallation is doen. You should configure .so file paths in httpd.conf.(see the below)
+ 
+#### redis server
+* add a redis server ip, port and password for redis in httpd.conf.
+
+### configuration detail
+#### so library loading
+* add two lines in httpd.conf(the first one is relatibe path and the second one is absolute path)
+
+
+```
+LoadFile   modules/libhiredis.so
+LoadModule  secuip_module  modules/mod_secuip.so
+```
+
+
+```
+LoadFile /MY_DIR/MY_SO/libhiredis.so
+LoadModule secuip_module   /MY_DIR/MY_SO/mod_secuip.so 
+```
+ 
+#### Redis connection pool
+Apahce initiates a redis connection pool. redis context is stored within internal queue.
+Independent queue space is allocated per apache process. Initial count is SecuipRedisInitCount's value.
+Place the below configuration in httpd.conf top-level.
+
+
+```
+SecuipRedisQueueEnabled on # secuip on or off
+SecuipRedisIP 172.19.113.231 # redis IP
+SecuipRedisPort 6379  # redis Port
+SecuipRedisPassword "MY_REDIS_PASSWORD" # redis server password(for redis AUTH command)
+SecuipRedisInitCount 5 # initial redis connection count per apache process
+```
+
+#### URI Path applied
+This conf. is available within virtual host.
+
+```
+<Location URI PATH>
+  SecuipEnabled on  # on or off for this path(on/off)
+  SecuipDurationSecond 30 # redis key expire time(second)
+  SecuipMaxCallCount 3 # Maximum request count number during SecuipDurationSecond's value.(when exceeds the number, the request is blocked during SecuipBlockSecond's value)
+  SecuipBlockSecond 60 # 
+  SecuipBlockResponseCode 403  # when blocked, HTTP response code for client(default 400) 
+</Location>
+```
+
+According to the above, if same IP, same location uri request exceeds request counts 3 for 30 seconds, the next request(same IP, URI) will be blocked and client gets HTTP response code 403 for 60 seconds.
+
+### logging
+secuip uses the apache error log. (the below is a example log)
+
+```
+[Thu Apr 03 13:03:13 2014] [error] The FIRST request(within [30sec])(Passing count:1) [123.143.8.124_/api/login/loginPostTOI.do] [duration time:30]
+[Thu Apr 03 13:03:16 2014] [error] The FIRST request(within [30sec])(Passing count:1) [112.169.60.135_/api/login/loginPostTOI.do] [duration time:30]
+[Thu Apr 03 13:03:19 2014] [error] Passing [123.143.8.124_/api/login/loginPostTOI.do] [current count:2]
+[Thu Apr 03 13:03:20 2014] [error] Passing [123.143.8.124_/api/login/loginPostTOI.do] [current count:3]
+[Thu Apr 03 13:03:21 2014] [error] Passing [123.143.8.124_/api/login/loginPostTOI.do] [current count:4]
+[Thu Apr 03 13:03:22 2014] [error] Passing [123.143.8.124_/api/login/loginPostTOI.do] [current count:5]
+[Thu Apr 03 13:03:23 2014] [error] Passing [123.143.8.124_/api/login/loginPostTOI.do] [current count:6]
+[Thu Apr 03 13:03:24 2014] [error] Passing [123.143.8.124_/api/login/loginPostTOI.do] [current count:7]
+[Thu Apr 03 13:03:24 2014] [error] Passing [123.143.8.124_/api/login/loginPostTOI.do] [current count:8]
+[Thu Apr 03 13:03:25 2014] [error] Blocking [123.143.8.124_/api/login/loginPostTOI.do] [block time:1200]
+[Thu Apr 03 13:03:25 2014] [error] Blocking [123.143.8.124_/api/login/loginPostTOI.do] [total req. count:9]
+[Thu Apr 03 13:03:26 2014] [error] Blocking [123.143.8.124_/api/login/loginPostTOI.do] [total req. count:10]
+```
+
+ 
+### Todo
+* query strng support for blocking element
+* Almost real-time applied without restarting apache server. when URI conf. is changed.
+* when blocked conditon, secuip doesn't block it and adding a specific custome request header and pass the request to back-end server.
+* A specific HTTP request header support for blocking element
+
+=============================================================
+
+# Secuip
+
 secuip는 HTTP 요청을 차단하는 아파치 모듈입니다. 아파치 웹서버와 함께 동작하고, 일반적으로 httpd.conf 파일에 설정 내용을 추가하여 동작시킵니다.
 
 ### secuip의 기능
