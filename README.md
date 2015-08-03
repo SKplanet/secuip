@@ -212,5 +212,5 @@ SecuipBlockResponseCode 403  # 요청 회수 초과로 block될 경우에 서버
 * query string의 key, value에 따른 차단 기능 추가
 * URI 변경 설정을 apache 재시작없이 실시간으로 적용하는 기능 추가 
 * 차단 조건에 부합할 때, 차단하지 않고 특정 HTTP 헤더를 추가하고 back-end 서버로 전달하는 기능 추가
-* 특정 HTTP header의 값을 key로 사용할 수 있게 하는 기능 추가
+* 특정 HTTP header의 값을 key로 사용할 수 있게 하는 기능 추가(conf. 추가)
 
