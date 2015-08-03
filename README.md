@@ -158,8 +158,8 @@ LoadModule secuip_module   /MY_DIR/MY_SO/mod_secuip.so
 ```
 
  
-#### 적용 경로 설정
-* Redis connection pool 설정
+### 적용 경로 설정
+#### Redis connection pool 설정
 아파치 웹서버 시작시 redis 서버와의 연결 pool를 생성합니다. redis 연결정보가 내부 queue에 저장됩니다.
 프로세스당 독립적인 queue 공간을 활용하여 RedisInitCount 만큼의 connection를 미리 만들어 사용합니다.
 아래 설정내용을 httpd.conf 최상위에 넣으십시오.
@@ -173,7 +173,7 @@ SecuipRedisPassword "MY_REDIS_PASSWORD" # redis 비밀번호
 SecuipRedisInitCount 5 # 각 프로세스당 redis 서버에 미리 연결하는 connection 수
 ```
 
-* URI 경로 지정을 위한 설정
+#### URI 경로 지정을 위한 설정
 virtual host 설정이 있는 곳에 아래 설정을 추가합니다.(예. 443 or 80 port)
 
 ```
