@@ -3,7 +3,7 @@
 secuip is a apache modulue which can block http requests. It has configurations within httpd.conf.
 
 ### main features
-* HTTP request block if requests which have same Client IP and same URI and exceed a spectific count
+* HTTP request block if requests which have same Client IP and same URI, exceed a spectific count
 * share the request count between servers (needs a redis server)
 * duration time is configurable(duration expire is supproted automatically using redis key expire)
 * HTTP response code is configurable when the request is blocked.(default code is 400)
