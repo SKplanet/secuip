@@ -76,6 +76,7 @@ typedef struct {
 	int redis_port; /* redis port */
 	char redis_password[128]; /* redis password */
 	int redis_init_count; /* redis client init count */
+        char allow_ip_list[2048]; /* allow ip list (a.b.c.d,w.x.y.z) comma delimter */
     apr_pool_t *pool;
 #if APR_HAS_THREADS
     apr_thread_mutex_t *mutex;
@@ -93,6 +94,7 @@ static void *create_svr_conf(apr_pool_t *p, server_rec *s);
 static void *merge_svr_conf(apr_pool_t *p, void *basev, void *overridesv);
 static int secuip_checker(request_rec *r);
 
+static apr_table_t *allow_ip_table;
 
 static void *create_dir_conf(apr_pool_t *pool, char *context)
 {
@@ -193,6 +195,7 @@ const char *secuip_set_block_response_code(cmd_parms *cmd, void *cfg, const char
     return NULL;
 }
 
+
 // svr conf
 static void *create_svr_conf(apr_pool_t *pool, server_rec *s)
 {
@@ -205,6 +208,7 @@ static void *create_svr_conf(apr_pool_t *pool, server_rec *s)
         svr_config->redis_port = 0;
         memset(svr_config->redis_password, 0, 128);
         svr_config->redis_init_count = 0;
+        memset(svr_config->allow_ip_list, 0, 2048);
     }
 
     return svr_config;
@@ -223,6 +227,8 @@ void *merge_svr_conf(apr_pool_t *p, void *basev, void *overridesv)
     memset(svr_config->redis_password, 0, 128);
     strcpy(svr_config->redis_password, strlen(add->redis_password) ? add->redis_password : base->redis_password);
     svr_config->redis_init_count = (add->redis_init_count == 0) ? base->redis_init_count : add->redis_init_count;
+    memset(svr_config->allow_ip_list, 0, 2048);
+    strcpy(svr_config->allow_ip_list, strlen(add->allow_ip_list) ? add->allow_ip_list : base->allow_ip_list);
 
     return svr_config;
 }
@@ -286,6 +292,15 @@ const char *secuip_set_redis_queue_enabled(cmd_parms *cmd, void *cfg, const char
     return NULL;
 }
 
+const char *secuip_set_allow_ip_list(cmd_parms *cmd, void *cfg, const char *arg)
+{
+    secuip_svr_config *svr_config = (secuip_svr_config *)ap_get_module_config(cmd->server->module_config, &secuip_module);
+
+    if (svr_config) {
+        strcpy(svr_config->allow_ip_list,arg);
+    }
+    return NULL;
+}
 
 //////////////// Application functions ///////////////////////////
 
@@ -421,6 +436,17 @@ static redisReply *send_redis_command(server_rec *s, redisContext **ctx, const c
     return reply;
 }
 
+static void set_allow_ip_table(apr_table_t *allow_ip_table, char *ip_list, apr_pool_t *pchild)
+{
+    char *p;
+    p = strtok(ip_list, ",");   
+    while (p) {
+        apr_table_set(allow_ip_table, p, "ALLOW");
+        p = strtok(NULL, ",");
+    }
+    return;
+}
+
 static void setup_redisclient_child_init(apr_pool_t *pchild, server_rec *s)
 {
     apr_status_t rv; 
@@ -495,6 +521,11 @@ static void setup_redisclient_child_init(apr_pool_t *pchild, server_rec *s)
     }
 
     //redisFree(ctx); // not necessary in here.
+
+
+    // create apr table for allow_ip_list
+    allow_ip_table = apr_table_make(pchild, 32); // init space 32
+    set_allow_ip_table(allow_ip_table, svr_config->allow_ip_list, pchild);
     return;
 }
 
@@ -559,6 +590,18 @@ END
     ap_rprintf(r, "dir conf duration: [%d]\n", config->duration);
     */
 
+#ifdef HTTPD22
+    char *client_ip_address = r->connection->remote_ip;
+#else
+    char *client_ip_address = r->connection->client_ip;
+#endif
+
+    /* check allow ip */
+    const char *allow_ip = apr_table_get(allow_ip_table, client_ip_address);
+    if (allow_ip != NULL) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "%s is allowed", client_ip_address);
+        return DECLINED;
+    }
 
     // HTTP response code when blocked.
     block_response_code = config->block_response_code;
@@ -571,12 +614,8 @@ END
     }
 
     const char *null = "NULL";
-#ifdef HTTPD22
     // Secuip's key string is composed by ClientIP_ServerHostname_URI.
-    char *key_string = apr_pstrcat(r->pool, r->connection->remote_ip, "_", (r->server->server_hostname == NULL ? null : r->server->server_hostname), "_", r->uri, NULL);
-#else
-    char *key_string = apr_pstrcat(r->pool, r->connection->client_ip, "_", (r->server->server_hostname == NULL ? null : r->server->server_hostname), "_", r->uri, NULL);
-#endif
+    char *key_string = apr_pstrcat(r->pool, client_ip_address, "_", (r->server->server_hostname == NULL ? null : r->server->server_hostname), "_", r->uri, NULL);
 
     ctx = (redisContext *)my_redis_ctx;
 
@@ -702,6 +741,7 @@ static const command_rec secuip_directives[] =
     AP_INIT_TAKE1("SecuipRedisPort", secuip_set_redis_port, NULL, RSRC_CONF, "redis port"),
     AP_INIT_TAKE1("SecuipRedisPassword", secuip_set_redis_password, NULL, RSRC_CONF, "redis password"),
     AP_INIT_TAKE1("SecuipRedisInitCount", secuip_set_redis_init_count, NULL, RSRC_CONF, "redis client init count"),
+    AP_INIT_TAKE1("SecuipAllowIPList", secuip_set_allow_ip_list, NULL, RSRC_CONF, "allow ip"),
 
     AP_INIT_TAKE1("SecuipEnabled", secuip_set_enabled, NULL, ACCESS_CONF, "Enable or disable mod_secuip"),
     AP_INIT_TAKE1("SecuipDurationSecond", secuip_set_duration_second, NULL, ACCESS_CONF, "time for chcking"),
