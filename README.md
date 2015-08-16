@@ -7,6 +7,7 @@ secuip is a apache modulue which can block http requests. It has configurations 
 * share the request count between servers (needs a redis server)
 * duration time is configurable(duration expire is supproted automatically using redis key expire)
 * HTTP response code is configurable when the request is blocked.(default code is 400)
+* White List supported
 
 ### apache versions supported
 Apache httpd 2.2.x, 
@@ -59,6 +60,7 @@ SecuipRedisIP 172.19.113.231 # redis IP
 SecuipRedisPort 6379  # redis Port
 SecuipRedisPassword "MY_REDIS_PASSWORD" # redis server password(for redis AUTH command)
 SecuipRedisInitCount 5 # initial redis connection count per apache process
+SecuipAllowIPList 127.0.0.1,192.168.0.1,1.2.3.4 # Theses IPs are not blocked.
 ```
 
 #### URI Path applied
