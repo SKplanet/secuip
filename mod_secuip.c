@@ -656,7 +656,7 @@ END
 				//////////// set blocking time
                 memset(redis_command, 0, sizeof(redis_command));
                 snprintf(redis_command, sizeof(redis_command), "EXPIRE %s %d", key_string, config->block_time);
-			ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "EXPIRE COMAND [%s]", redis_command);
+			ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "EXPIRE COMMAND [%s]", redis_command);
 				reply = send_redis_command(r->server, &ctx, redis_command, svr_config->redis_ip, svr_config->redis_port, svr_config->redis_password);
 				//ap_rprintf(r, "INCR: [%d]<BR>\n", reply->integer);
 				if (reply == NULL) {
@@ -681,7 +681,7 @@ END
 			return block_response_code;
 		}
         else {
-		    ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "Passing [%s] [current count:%d]", key_string, r->uri, total_count);
+		    ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "Passing [%s] [current count:%d]", key_string, total_count);
 
             if (manage_redis_context_queue(&ctx, TRYPUSH_REDIS_CONTEXT, r) < 0) {
                 return DECLINED;
