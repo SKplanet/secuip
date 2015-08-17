@@ -656,7 +656,7 @@ END
 				//////////// set blocking time
                 memset(redis_command, 0, sizeof(redis_command));
                 snprintf(redis_command, sizeof(redis_command), "EXPIRE %s %d", key_string, config->block_time);
-			ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "EXPIRE COMMAND [%s]", redis_command);
+			ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "EXPIRE COMMAND(current_count == max_call_count) [%s]", redis_command);
 				reply = send_redis_command(r->server, &ctx, redis_command, svr_config->redis_ip, svr_config->redis_port, svr_config->redis_password);
 				//ap_rprintf(r, "INCR: [%d]<BR>\n", reply->integer);
 				if (reply == NULL) {
@@ -711,6 +711,7 @@ END
 		//////////// set duration time
         memset(redis_command, 0, sizeof(redis_command));
         snprintf(redis_command, sizeof(redis_command), "EXPIRE %s %d", key_string, config->duration);
+	ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "EXPIRE COMMAND(the first req.) [%s]", redis_command);
 		reply = send_redis_command(r->server, &ctx, redis_command, svr_config->redis_ip, svr_config->redis_port, svr_config->redis_password);
 		//ap_rprintf(r, "INCR: [%d]<BR>\n", reply->integer);
 		if (reply == NULL) {
