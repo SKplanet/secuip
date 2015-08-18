@@ -667,6 +667,7 @@ END
                     }
 					return block_response_code;
 				}
+                                ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "REPLY(%s): type[%d], integer[%d], len[%d], str[%s], elements[%d]", redis_command, reply->type, reply->integer, reply->len, (reply->str == NULL ? "NULL" : reply->str));
 				ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "Blocking [%s] [block time:%d]", key_string, config->block_time);
 				freeReplyObject(reply);
 				/////////////////////////////////////////
@@ -722,6 +723,7 @@ END
             }
 			return DECLINED;
 		}
+                ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "REPLY(%s): type[%d], integer[%d], len[%d], str[%s], elements[%d]", redis_command, reply->type, reply->integer, reply->len, (reply->str == NULL ? "NULL" : reply->str));
         ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "The FIRST request(within [%dsec])(Passing count:1) [%s] [duration time:%d]", config->duration, key_string, config->duration);
         freeReplyObject(reply);
 		/////////////////////////////////////////
