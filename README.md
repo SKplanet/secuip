@@ -28,7 +28,7 @@ secuip uses hiredis library which is a redis client library. So, the configurati
 * if you are using apache 2.2.x, use this command, make -f Makefile22.
 * (Assuption: apache webserver's path is /app/apache. If it is different, you should modify Makefile, Makefile22 based on your apache directory.)
 * copy two .so files to /app/apache/modules(or apache module directory).
-* Intallation is doen. You should configure .so file paths in httpd.conf.(see the below)
+* Intallation is done. You should configure .so file paths in httpd.conf.(see the below)
  
 #### redis server
 * add a redis server ip, port and password for redis in httpd.conf.
